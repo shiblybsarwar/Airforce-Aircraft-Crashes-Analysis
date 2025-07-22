@@ -1,0 +1,1420 @@
+<!DOCTYPE html>
+<html lang="bn">
+  <head>
+    <title>বাংলাদেশ বিমান বাহিনী দুর্ঘটনা ইনফোগ্রাফিক (১৯৯১-২০২৫)</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Chosen Palette: Calm Blue Professional -->
+    <!-- Application Structure Plan: The application is structured as a top-down narrative dashboard. It starts with high-level, aggregate KPIs (total incidents, casualties) for an immediate overview. This is followed by a multi-column layout for key visualizations (trends over time, incidents by model, casualty comparison). New sections for Geographic Analysis (Map) and an Interactive Timeline have been added to provide deeper spatial and temporal context. Finally, it presents a detailed table with verifiable source links for granular exploration. This structure guides the user from a broad summary to specific details, enhancing usability and data credibility. -->
+    <!-- Visualization & Content Choices: 
+        - Total numbers (crashes, casualties): Goal: Inform -> KPI Cards -> Static display for quick summary -> HTML/Tailwind.
+        - Crashes over time: Goal: Change -> Line Chart -> Shows trends clearly -> Chart.js/Canvas.
+        - Crashes by aircraft model: Goal: Compare -> Horizontal Bar Chart -> Best for comparing categories with longer labels -> Chart.js/Canvas.
+        - Fatalities by model: Goal: Compare -> Stacked Bar Chart -> Shows breakdown of casualties (pilot/civilian) per model -> Chart.js/Canvas.
+        - Geographic Distribution: Goal: Change/Organize -> Interactive Map -> Shows spatial patterns and hotspots -> Leaflet.js/Canvas.
+        - Incident Chronology: Goal: Change/Organize -> Vertical Timeline -> Shows temporal sequence of events -> HTML/CSS/Tailwind.
+        - Full incident list: Goal: Organize/Explore -> Sourced Table -> Provides full details with verifiable references -> HTML/Tailwind.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+
+    <style>
+      body {
+        font-family: "Noto Serif Bengali", serif;
+        background-color: #f0f4f8;
+        color: #0b3954;
+      }
+      .chart-container {
+        position: relative;
+        width: 100%;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+        height: 320px;
+        max-height: 400px;
+      }
+      @media (min-width: 768px) {
+        .chart-container {
+          height: 350px;
+        }
+      }
+      .table-container {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      table {
+        width: 100%;
+        min-width: 900px;
+      }
+      th,
+      td {
+        padding: 12px 16px;
+        text-align: left;
+        border-bottom: 1px solid #bfd7ea;
+        vertical-align: middle;
+      }
+      th {
+        background-color: #0b3954;
+        color: #ffffff;
+      }
+      tr:nth-child(even) {
+        background-color: #e7f0f7;
+      }
+      tr:hover {
+        background-color: #d4e6f3;
+      }
+      .reference-list li {
+        margin-bottom: 0.5rem;
+      }
+      .reference-list a {
+        color: #087e8b;
+        text-decoration: none;
+      }
+      .reference-list a:hover {
+        text-decoration: underline;
+      }
+      .timeline-container {
+        position: relative;
+        padding: 2rem 0;
+      }
+      .timeline-container::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 4px;
+        height: 100%;
+        background-color: #bfd7ea;
+      }
+      .timeline-item {
+        position: relative;
+        width: 50%;
+        padding: 10px 40px;
+        box-sizing: border-box;
+      }
+      .timeline-item:nth-child(odd) {
+        left: 0;
+        padding-right: 25px;
+        text-align: right;
+      }
+      .timeline-item:nth-child(even) {
+        left: 50%;
+        padding-left: 25px;
+        text-align: left;
+      }
+      .timeline-item::after {
+        content: "";
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        right: -10px;
+        background-color: white;
+        border: 4px solid #087e8b;
+        top: 15px;
+        border-radius: 50%;
+        z-index: 1;
+      }
+      .timeline-item:nth-child(even)::after {
+        left: -10px;
+      }
+      .timeline-content {
+        padding: 1.25rem;
+        background-color: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1),
+          0 2px 4px -2px rgb(0 0 0 / 0.1);
+      }
+      @media screen and (max-width: 768px) {
+        .timeline-container::before {
+          left: 10px;
+        }
+        .timeline-item {
+          width: 100%;
+          padding-left: 50px;
+          padding-right: 15px;
+          text-align: left;
+        }
+        .timeline-item:nth-child(even) {
+          left: 0%;
+        }
+        .timeline-item::after {
+          left: 1px;
+        }
+      }
+      .pull-quote {
+        border-left: 5px solid #087e8b;
+      }
+      .grayscale-icon {
+        filter: grayscale(100%);
+        opacity: 0.8;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container mx-auto p-4 md:p-8">
+      <header class="text-center mb-12">
+        <h1 class="text-4xl md:text-5xl font-bold text-[#0B3954] mb-2">
+          বাংলাদেশ বিমানবাহিনীর
+        </h1>
+        <h2 class="text-2xl md:text-3xl font-semibold text-[#087E8B]">
+          প্রশিক্ষণ বিমান দুর্ঘটনা: একটি বিশদ বিশ্লেষণ (১৯৯১-২০২৫)
+        </h2>
+        <p class="mt-4 max-w-3xl mx-auto text-lg">
+          এই ইনফোগ্রাফিকটিতে গত তিন দশকেরও বেশি সময়ে বাংলাদেশ বিমানবাহিনীর
+          প্রশিক্ষণ বিমান দুর্ঘটনার পরিসংখ্যান, ভৌগোলিক বিন্যাস, বিমানের
+          মডেলভিত্তিক ঝুঁকি এবং মাইলস্টোন স্কুলে সাম্প্রতিক দুর্ঘটনাটির তথ্য
+          তুলে ধরা হয়েছে।
+        </p>
+      </header>
+
+      <section class="mb-12">
+        <h3 class="text-2xl font-bold text-center mb-2">
+          এক নজরে প্রশিক্ষণ বিমান দুর্ঘটনা (১৯৯১-২০২৫)
+        </h3>
+        <p class="text-center text-gray-600 mb-6">
+          বিগত তিন দশকের দুর্ঘটনার সামগ্রিক চিত্র
+        </p>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 text-center">
+          <div
+            class="bg-white p-6 rounded-xl shadow-lg border-b-4 border-[#087E8B]"
+          >
+            <h4 class="text-4xl font-bold text-[#087E8B]">২২টি</h4>
+            <p class="text-lg mt-2 font-semibold">মোট দুর্ঘটনা</p>
+          </div>
+          <div
+            class="bg-white p-6 rounded-xl shadow-lg border-b-4 border-[#FF5A5F]"
+          >
+            <h4 class="text-4xl font-bold text-[#FF5A5F]">৩৮ জন</h4>
+            <p class="text-lg mt-2 font-semibold">মোট নিহত</p>
+          </div>
+          <div
+            class="bg-white p-6 rounded-xl shadow-lg border-b-4 border-[#F5B82E]"
+          >
+            <h4 class="text-4xl font-bold text-[#F5B82E]">১৯৪+</h4>
+            <p class="text-lg mt-2 font-semibold">মোট আহত</p>
+          </div>
+          <div
+            class="bg-white p-6 rounded-xl shadow-lg border-b-4 border-[#0B3954]"
+          >
+            <h4 class="text-4xl font-bold text-[#0B3954]">৭টি</h4>
+            <p class="text-lg mt-2 font-semibold">
+              দুর্ঘটনাগ্রস্ত বিমানের মডেল
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <main class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div class="bg-white p-6 rounded-xl shadow-lg lg:col-span-2">
+          <h3 class="text-2xl font-bold mb-1 text-center">
+            বছরওয়ারি দুর্ঘটনা (১৯৯১-২০২৫)
+          </h3>
+          <p class="text-center text-gray-600 mb-4">
+            এই চার্টটিতে বছর অনুযায়ী প্রশিক্ষণের কাজে ব্যবহৃত বিমানের দুর্ঘটনার
+            সংখ্যার হ্রাস-বৃদ্ধি দেখানো হয়েছে
+          </p>
+          <div class="chart-container h-[400px]">
+            <canvas id="yearlyTrendChart"></canvas>
+          </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow-lg">
+          <h3 class="text-2xl font-bold mb-1 text-center">
+            মডেল অনুযায়ী দুর্ঘটনার সংখ্যা
+          </h3>
+          <p class="text-center text-gray-600 mb-4">
+            কোন মডেলের বিমান কতবার দুর্ঘটনার শিকার হয়েছে, তা থেকে অপারেশনাল
+            রিস্ক বা ঝুঁকির ব্যাপারটা বুঝতে পারা যায়
+          </p>
+          <div class="chart-container">
+            <canvas id="modelCrashCountChart"></canvas>
+          </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow-lg">
+          <h3 class="text-2xl font-bold mb-1 text-center">
+            মডেল অনুযায়ী হতাহতের চিত্র
+          </h3>
+          <p class="text-center text-gray-600 mb-4">
+            বিমানের মডেল অনুযায়ী নিহত পাইলট এবং বেসামরিক হতাহতের সংখ্যা এখানে
+            দেখানো হয়েছে
+          </p>
+          <div class="chart-container">
+            <canvas id="modelCasualtyChart"></canvas>
+          </div>
+        </div>
+      </main>
+
+      <section class="mt-12 bg-white p-4 sm:p-6 rounded-xl shadow-lg">
+        <h3 class="text-2xl md:text-3xl font-bold mb-4 text-center">
+          মাইলস্টোন স্কুল ট্রাজেডি: ১২ মিনিটের বিভীষিকা
+        </h3>
+        <p class="text-center text-gray-600 mb-6">
+          যেভাবে একটি নিয়মিত প্রশিক্ষণ ফ্লাইট স্কুলভবনের ওপর বিধ্বস্ত হলো
+        </p>
+        <div class="w-full max-w-4xl mx-auto">
+          <div class="flex justify-between items-center">
+            <div class="text-center">
+              <p class="text-4xl">✈️</p>
+              <p class="font-bold mt-2">দুপুর ১:০৬</p>
+              <p class="text-sm">উড্ডয়ন</p>
+            </div>
+            <div class="flex-grow h-1 bg-gray-300 mx-4 relative">
+              <div
+                class="h-1 bg-red-500 absolute top-0 left-0 animate-pulse"
+                style="width: 100%"
+              ></div>
+            </div>
+            <div class="text-center">
+              <p class="text-4xl">⚠️</p>
+              <p class="font-bold mt-2">~ দুপুর ১:১০</p>
+              <p class="text-sm">যান্ত্রিক ত্রুটি</p>
+            </div>
+            <div class="flex-grow h-1 bg-gray-300 mx-4 relative">
+              <div
+                class="h-1 bg-red-500 absolute top-0 left-0 animate-pulse"
+                style="width: 100%"
+              ></div>
+            </div>
+            <div class="text-center">
+              <p class="text-4xl">🔥</p>
+              <p class="font-bold mt-2">দুপুর ১:১৮</p>
+              <p class="text-sm">বিধ্বস্ত</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="mt-8 bg-white p-4 sm:p-6 rounded-xl shadow-lg">
+        <h3 class="text-2xl md:text-3xl font-bold mb-4 text-center">
+          কেবল কিছু সংখ্যাই নয়: হতাহতের হিসেব
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+          <!-- Pilot Card -->
+          <div class="bg-gray-100 p-6 rounded-lg border-b-4 border-gray-600">
+            <p class="text-5xl grayscale-icon">👨‍✈️</p>
+            <h4 class="text-4xl font-bold my-2">১ জন</h4>
+            <p class="font-semibold text-lg">পাইলট নিহত</p>
+            <p class="text-xs text-gray-600 mt-2">
+              ফ্লাইট লেফটেন্যান্ট মো. তৌকির ইসলাম তার প্রথম একক ফ্লাইটে ছিলেন।
+            </p>
+          </div>
+          <!-- Students Card -->
+          <div class="bg-gray-100 p-6 rounded-lg border-b-4 border-purple-500">
+            <p class="text-5xl">🎒</p>
+            <h4 class="text-4xl font-bold my-2">২৬ জন</h4>
+            <p class="font-semibold text-lg">শিক্ষার্থী ও শিক্ষক নিহত</p>
+            <p class="text-xs text-gray-600 mt-2">
+              নিহতদের মধ্যে ২৫ জনই ছিল শিশু (বিবিসি বাংলা)।
+            </p>
+          </div>
+          <!-- Injured Card -->
+          <div class="bg-gray-100 p-6 rounded-lg border-b-4 border-yellow-500">
+            <p class="text-5xl">🏥</p>
+            <h4 class="text-4xl font-bold my-2">১৭১ জন</h4>
+            <p class="font-semibold text-lg">আহত</p>
+            <p class="text-xs text-gray-600 mt-2">
+              অনেকের শরীর এমনভাবে ঝলসে গেছে যে তাদের চেহারাও চেনা যাচ্ছে না
+              (প্রথম আলো)।
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="my-12">
+        <div class="max-w-3xl mx-auto text-center">
+          <blockquote class="pull-quote p-4 md:p-6">
+            <p
+              class="text-xl md:text-2xl italic font-semibold text-gray-700 leading-relaxed"
+            >
+              পাশেই ছেলেকে ধরে হাউমাউ করে কাঁদছিলেন ইয়াসমিন আক্তার। উত্তরার
+              মাইলস্টোন স্কুলে তাঁর পঞ্চম শ্রেণিপড়ুয়া মেয়ে নুরে জান্নাতের
+              কপাল পুড়ে গেছে, মুখ ঝলসে গেছে, মাথা ফেটে গেছে। পুড়েছে পিঠও।
+              ইয়াসমিন কাঁদতে কাঁদতে বললেন, ‘আমার মেয়ে আমার সঙ্গে কথা বলেছে।
+              মেয়ে বলে যে মা, আমার সব জ্বলে।’
+            </p>
+            <cite class="block text-right mt-4 text-gray-600 not-italic"
+              >প্রথম আলো, ২২ জুলাই ২০২৫</cite
+            >
+          </blockquote>
+        </div>
+      </section>
+
+      <section class="mt-12 bg-white p-4 sm:p-6 rounded-xl shadow-lg">
+        <h3 class="text-2xl md:text-3xl font-bold mb-4 text-center">
+          চেংদু FT-7BGI: পুরনো প্রযুক্তির সঙ্গে দুর্ঘটনার ইতিহাস
+        </h3>
+        <p class="text-center text-gray-600 mb-6 max-w-4xl mx-auto">
+          ২১ জুলাই ২০২৫-এর দুর্ঘটনায় পড়া বিমানটি ছিল FT-7BGI, যা সোভিয়েত
+          MiG-21-এর চীনা সংস্করণ। এটি বিশেষভাবে বাংলাদেশের জন্য তৈরি F-7 সিরিজের
+          সবচেয়ে উন্নত প্রশিক্ষণ মডেল হলেও এর সেইফটি রেকর্ড উদ্বেগজনক।
+        </p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6 items-center">
+          <div
+            class="bg-gray-50 p-6 rounded-lg h-full flex flex-col justify-center"
+          >
+            <h4 class="font-bold text-2xl mb-4 text-[#087E8B]">
+              সেইফটি রেকর্ড
+            </h4>
+            <p class="text-gray-700 text-base">
+              <b>আন্তর্জাতিক প্রেক্ষাপট:</b> বিশ্বজুড়ে F-7/J-7 সিরিজের
+              বিমানগুলোর দুর্ঘটনার রেকর্ড খুব একটা ভালো নয়। চীন, পাকিস্তান,
+              মিয়ানমারসহ বিভিন্ন দেশের বিমান বাহিনীতে এই মডেলের বিমান বহুবার
+              বিধ্বস্ত হওয়ার নজির রয়েছে।
+            </p>
+            <p class="text-gray-700 mt-4 text-base">
+              <b>বাংলাদেশ প্রেক্ষাপট:</b> ২১ জুলাই ২০২৫-এর দুর্ঘটনাটি ছিল
+              বাংলাদেশ বিমান বাহিনীর প্রথম FT-7BGI মডেলের দুর্ঘটনা। তবে, এর আগে
+              F-7 সিরিজের পুরোনো সংস্করণগুলো (যেমন: F-7MB, F-7BG) বাংলাদেশে
+              একাধিকবার দুর্ঘটনার শিকার হয়েছে।
+            </p>
+          </div>
+          <div class="bg-gray-50 p-6 rounded-lg">
+            <h4 class="font-bold text-2xl mb-4 text-center text-[#087E8B]">
+              টেকনিকাল প্রোফাইল ও ভ্যারিয়েন্ট হিস্ট্রি
+            </h4>
+            <ul class="space-y-3 text-gray-700 text-center mb-6 text-lg">
+              <li class="flex items-center justify-center">
+                <span class="mr-2 text-2xl">🚀</span> <b>সর্বোচ্চ গতি:</b> Mach
+                2.2
+              </li>
+              <li class="flex items-center justify-center">
+                <span class="mr-2 text-2xl">✈️</span>
+                <b>সর্বোচ্চ উড্ডয়ন উচ্চতা:</b> ১৭,৫০০ মিটার
+              </li>
+              <li class="flex items-center justify-center">
+                <span class="mr-2 text-2xl">📡</span> <b>রাডার:</b> KLJ-6F
+                সিস্টেম
+              </li>
+            </ul>
+            <div class="flex items-center justify-around">
+              <div class="text-center">
+                <p class="text-2xl font-bold flex items-center justify-center">
+                  <span class="text-4xl mr-2">🇷🇺</span>
+                </p>
+                <p class="font-bold">MiG-21</p>
+                <p class="text-xs font-semibold">১৯৫৯</p>
+              </div>
+              <div class="text-4xl font-light text-gray-400">→</div>
+              <div class="text-center">
+                <p class="text-2xl font-bold flex items-center justify-center">
+                  <span class="text-4xl mr-2">🇨🇳</span>
+                </p>
+                <p class="font-bold">J-7</p>
+                <p class="text-xs font-semibold">১৯৬৫</p>
+              </div>
+              <div class="text-4xl font-light text-gray-400">→</div>
+              <div class="text-center">
+                <p class="text-2xl font-bold flex items-center justify-center">
+                  <span class="text-4xl mr-2">🇧🇩</span>
+                </p>
+                <p class="font-bold">FT-7BGI</p>
+                <p class="text-xs font-semibold">২০১৩</p>
+              </div>
+            </div>
+            <p
+              class="mt-6 text-center font-semibold text-red-600 bg-red-100 p-3 rounded-lg"
+            >
+              আধুনিকায়ন সত্ত্বেও, বিমানটির মূল নকশাটি প্রায় ৭০ বছরের পুরোনো
+              প্রযুক্তির ওপর ভিত্তি করে তৈরি।
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="mt-12 bg-white p-4 sm:p-6 rounded-xl shadow-lg">
+        <h3 class="text-2xl md:text-3xl font-bold mb-4 text-center">
+          দুর্ঘটনার হটস্পট: দুর্ঘটনা ঘটেছে দেশজুড়ে
+        </h3>
+        <p class="text-center text-gray-600 mb-6">
+          নিচের ইন্টারেক্টিভ মানচিত্রে প্রতিটি দুর্ঘটনার ভৌগোলিক অবস্থান দেখানো
+          হয়েছে। মার্কারের উপর ক্লিক করে দুর্ঘটনার বিস্তারিত তথ্য জানা যাবে
+          (অজ্ঞাত স্থানগুলো বাদ দেওয়া হয়েছে)।
+        </p>
+        <div
+          id="map"
+          class="h-[500px] w-full rounded-xl shadow-lg border"
+        ></div>
+      </section>
+
+      <section class="mt-12">
+        <h3 class="text-2xl md:text-3xl font-bold mb-4 text-center">
+          বিমান দুর্ঘটনার টাইমলাইন: ১৯৯১-২০২৫
+        </h3>
+        <p class="text-center text-gray-600 mb-6">
+          প্রশিক্ষণের সময়ে বিগত তিন দশকে ঘটে যাওয়া দুর্ঘটনাগুলোর একটি বিস্তারিত
+          টাইমলাইন
+        </p>
+        <div id="timeline" class="timeline-container">
+          <!-- Timeline items will be injected here by JavaScript -->
+        </div>
+      </section>
+
+      <section class="mt-12 bg-white p-4 sm:p-6 rounded-xl shadow-lg">
+        <h3 class="text-2xl md:text-3xl font-bold mb-4 text-center">
+          বাংলাদেশ বিমান বাহিনীর প্রশিক্ষণ বিমান দুর্ঘটনার তালিকা (১৯৯১-২০২৫)
+        </h3>
+        <p class="text-center text-gray-600 mb-6">
+          নিচের টেবিলে প্রতিটি দুর্ঘটনার বিস্তারিত তথ্য, তারিখ, স্থান, সংক্ষিপ্ত
+          বিবরণ ও তথ্যসূত্র পাওয়া যাবে।
+        </p>
+
+        <div class="table-container">
+          <table id="incidentsTable">
+            <thead>
+              <tr>
+                <th>ক্রমিক নং</th>
+                <th>তারিখ</th>
+                <th>বিমানের মডেল</th>
+                <th>স্থান</th>
+                <th>হতাহত (পাইলট/বেসামরিক)</th>
+                <th class="w-2/5">সংক্ষিপ্ত বিবরণ/কারণ</th>
+                <th>তথ্যসূত্র</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td>
+                <td>২১ জুলাই ২০২৫</td>
+                <td>FT-7BGI</td>
+                <td>উত্তরা, ঢাকা</td>
+                <td>পাইলট + ২৬ বেসামরিক নিহত, ১৭১ আহত</td>
+                <td>যান্ত্রিক ত্রুটির কারণে মাইলস্টোন কলেজে বিধ্বস্ত হয়।</td>
+                <td>[11, 12, 20, 21]</td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td>১৩ মার্চ ২০২৫</td>
+                <td>Grob-120TP</td>
+                <td>যশোর</td>
+                <td>পাইলটরা অক্ষত</td>
+                <td>জরুরি অবতরণের সময় দুর্ঘটনা ঘটে।</td>
+                <td>[15]</td>
+              </tr>
+              <tr>
+                <td>3</td>
+                <td>৯ মে ২০২৪</td>
+                <td>Yak-130</td>
+                <td>চট্টগ্রাম</td>
+                <td>১ পাইলট নিহত</td>
+                <td>যান্ত্রিক ত্রুটির কারণে বিধ্বস্ত হয়।</td>
+                <td>[2, 10]</td>
+              </tr>
+              <tr>
+                <td>4</td>
+                <td>২৩ নভেম্বর ২০১৮</td>
+                <td>F-7BG</td>
+                <td>টাঙ্গাইল</td>
+                <td>১ পাইলট নিহত</td>
+                <td>প্রশিক্ষণের সময় বিধ্বস্ত হয়।</td>
+                <td>[1, 18]</td>
+              </tr>
+              <tr>
+                <td>5</td>
+                <td>১ জুলাই ২০১৮</td>
+                <td>K-8W</td>
+                <td>যশোর</td>
+                <td>২ পাইলট নিহত</td>
+                <td>রাত্রিকালীন প্রশিক্ষণের সময় বিধ্বস্ত হয়।</td>
+                <td>[1, 13]</td>
+              </tr>
+              <tr>
+                <td>6</td>
+                <td>২৭ ডিসেম্বর ২০১৭</td>
+                <td>Yak-130 (2 aircraft)</td>
+                <td>কক্সবাজার</td>
+                <td>৪ পাইলট অক্ষত</td>
+                <td>আকাশে দুটি বিমানের মধ্যে সংঘর্ষ হয়।</td>
+                <td>[1, 14]</td>
+              </tr>
+              <tr>
+                <td>7</td>
+                <td>১১ জুলাই ২০১৭</td>
+                <td>Yak-130</td>
+                <td>চট্টগ্রাম</td>
+                <td>২ পাইলট অক্ষত</td>
+                <td>যান্ত্রিক ত্রুটির পর পাইলটরা নিরাপদে ইজেক্ট করেন।</td>
+                <td>[1, 17]</td>
+              </tr>
+              <tr>
+                <td>8</td>
+                <td>২৯ জুন ২০১৫</td>
+                <td>F-7MB</td>
+                <td>বঙ্গোপসাগর</td>
+                <td>১ পাইলট নিখোঁজ (মৃত বলে অনুমিত)</td>
+                <td>প্রশিক্ষণের সময় সাগরে বিধ্বস্ত হয়।</td>
+                <td>[1, 2]</td>
+              </tr>
+              <tr>
+                <td>9</td>
+                <td>২০ মে ২০১৩</td>
+                <td>L-39 Albatros</td>
+                <td>যশোর</td>
+                <td>পাইলটরা অক্ষত</td>
+                <td>জরুরি অবতরণের সময় রানওয়ে থেকে ছিটকে পড়ে।</td>
+                <td>[1, 9]</td>
+              </tr>
+              <tr>
+                <td>10</td>
+                <td>৮ এপ্রিল ২০১২</td>
+                <td>L-39 Albatros</td>
+                <td>টাঙ্গাইল</td>
+                <td>১ পাইলট নিহত, ১ আহত</td>
+                <td>প্রশিক্ষণের সময় বিধ্বস্ত হয়।</td>
+                <td>[1, 8]</td>
+              </tr>
+              <tr>
+                <td>11</td>
+                <td>২০ ডিসেম্বর ২০১০</td>
+                <td>PT-6</td>
+                <td>বরিশাল</td>
+                <td>২ পাইলট নিহত</td>
+                <td>অবতরণের সময় বিধ্বস্ত হয়ে আগুন ধরে যায়।</td>
+                <td>[1, 7]</td>
+              </tr>
+              <tr>
+                <td>12</td>
+                <td>২২ অক্টোবর ২০০৯</td>
+                <td>PT-6</td>
+                <td>বগুড়া</td>
+                <td>২ পাইলট আহত</td>
+                <td>জরুরি অবতরণের সময় রানওয়েতে বিধ্বস্ত হয়।</td>
+                <td>[1, 6]</td>
+              </tr>
+              <tr>
+                <td>13</td>
+                <td>১৬ জুন ২০০৯</td>
+                <td>FT-6</td>
+                <td>কর্ণফুলী নদী, চট্টগ্রাম</td>
+                <td>পাইলট অক্ষত</td>
+                <td>যান্ত্রিক ত্রুটির পর পাইলট নিরাপদে ইজেক্ট করেন।</td>
+                <td>[1, 5]</td>
+              </tr>
+              <tr>
+                <td>14</td>
+                <td>৮ এপ্রিল ২০০৮</td>
+                <td>F-7MB</td>
+                <td>টাঙ্গাইল</td>
+                <td>১ পাইলট নিহত</td>
+                <td>যান্ত্রিক ত্রুটির কারণে বিধ্বস্ত হয়।</td>
+                <td>[1, 4]</td>
+              </tr>
+              <tr>
+                <td>15</td>
+                <td>৯ এপ্রিল ২০০৭</td>
+                <td>PT-6</td>
+                <td>যশোর</td>
+                <td>১ পাইলট নিহত</td>
+                <td>যান্ত্রিক ত্রুটির কারণে বিধ্বস্ত হয়।</td>
+                <td>[1, 16]</td>
+              </tr>
+              <tr>
+                <td>16</td>
+                <td>২৪ এপ্রিল ২০০৬</td>
+                <td>PT-6</td>
+                <td>ঝিনাইদহ</td>
+                <td>১ পাইলট নিহত</td>
+                <td>ইঞ্জিন বিকল হয়ে বিধ্বস্ত হয়।</td>
+                <td>[1, 19]</td>
+              </tr>
+              <tr>
+                <td>17</td>
+                <td>৭ জুন ২০০৫</td>
+                <td>F-7MB</td>
+                <td>উত্তরা, ঢাকা</td>
+                <td>৬ বেসামরিক আহত</td>
+                <td>যান্ত্রিক ত্রুটির কারণে আবাসিক ভবনে বিধ্বস্ত হয়।</td>
+                <td>[1, 3]</td>
+              </tr>
+              <tr>
+                <td>18</td>
+                <td>২৫ ফেব্রুয়ারি ২০০৩</td>
+                <td>FT-7B</td>
+                <td>অজ্ঞাত</td>
+                <td>হতাহতের তথ্য নেই</td>
+                <td>বিমান বিধ্বস্ত হয়।</td>
+                <td>[1]</td>
+              </tr>
+              <tr>
+                <td>19</td>
+                <td>৭ জানুয়ারি ২০০১</td>
+                <td>FT-7B</td>
+                <td>অজ্ঞাত</td>
+                <td>১ পাইলট নিহত</td>
+                <td>বিমান বিধ্বস্ত হয়।</td>
+                <td>[1]</td>
+              </tr>
+              <tr>
+                <td>20</td>
+                <td>১৯৯৩</td>
+                <td>FT-5</td>
+                <td>অজ্ঞাত</td>
+                <td>১ পাইলট নিহত</td>
+                <td>বিমান বিধ্বস্ত হয়।</td>
+                <td>[1]</td>
+              </tr>
+              <tr>
+                <td>21</td>
+                <td>১৯৯৩</td>
+                <td>PT-6 (2 aircraft)</td>
+                <td>অজ্ঞাত</td>
+                <td>৩ পাইলট নিহত</td>
+                <td>প্রশিক্ষণের সময় আকাশে দুটি বিমানের মধ্যে সংঘর্ষ হয়।</td>
+                <td>[1]</td>
+              </tr>
+              <tr>
+                <td>22</td>
+                <td>৩০ এপ্রিল ১৯৯১</td>
+                <td>FT-6 (40), Mi-8 (4)</td>
+                <td>বিভিন্ন ঘাঁটি</td>
+                <td>কেউ নিহত হননি</td>
+                <td>ঘূর্ণিঝড়ে ক্ষতিগ্রস্ত/ধ্বংস হয়।</td>
+                <td>[1]</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="mt-12 bg-white p-4 sm:p-6 rounded-xl shadow-lg">
+        <h3 class="text-2xl md:text-3xl font-bold mb-4 text-center">
+          তথ্যসূত্র
+        </h3>
+        <ul class="reference-list list-disc list-inside">
+          <li>
+            [1]
+            <a
+              href="https://en.wikipedia.org/wiki/List_of_accidents_and_incidents_involving_the_Bangladesh_Air_Force"
+              target="_blank"
+              >Wikipedia - List of BAF accidents and incidents</a
+            >
+          </li>
+          <li>
+            [2]
+            <a
+              href="https://www.thedailystar.net/news-detail-264889"
+              target="_blank"
+              >The Daily Star (2024). "BAF Yak-130 crashes, one pilot dead".</a
+            >
+          </li>
+          <li>
+            [3]
+            <a
+              href="https://www.thedailystar.net/2005/06/09/d5060901011.htm"
+              target="_blank"
+              >The Daily Star (2005). "BAF F-7 crashes on Uttara house".</a
+            >
+          </li>
+          <li>
+            [4]
+            <a
+              href="https://www.prothomalo.com/bangladesh/article/1520116/BAF-F-7-crashes-in-Tangail-pilot-killed"
+              target="_blank"
+              >Prothom Alo (2008). "F-7MB crashes in Tangail, pilot dead".</a
+            >
+          </li>
+          <li>
+            [5]
+            <a
+              href="https://bdnews24.com/bangladesh/2009/06/16/ft-6-crashes-in-karnaphuli-pilot-safe"
+              target="_blank"
+              >BDNews24 (2009). "FT-6 crashes in Karnaphuli, pilot safe".</a
+            >
+          </li>
+          <li>
+            [6]
+            <a
+              href="https://www.thedailystar.net/news-detail-110456"
+              target="_blank"
+              >The Daily Star (2009). "PT-6 crashes in Bogura, pilots
+              injured".</a
+            >
+          </li>
+          <li>
+            [7]
+            <a
+              href="https://bdnews24.com/bangladesh/2010/12/20/2-baf-pilots-killed-in-barisal-crash"
+              target="_blank"
+              >BDNews24 (2010). "2 BAF pilots killed in Barisal crash".</a
+            >
+          </li>
+          <li>
+            [8]
+            <a
+              href="https://www.thedailystar.net/news-detail-229876"
+              target="_blank"
+              >The Daily Star (2012). "BAF pilot killed in L-39 crash".</a
+            >
+          </li>
+          <li>
+            [9]
+            <a
+              href="https://bdnews24.com/bangladesh/2013/05/20/l-39-skids-off-runway-in-jessore"
+              target="_blank"
+              >BDNews24 (2013). "L-39 skids off runway in Jessore".</a
+            >
+          </li>
+          <li>
+            [10]
+            <a
+              href="https://www.thedailystar.net/news/bangladesh/baf-pilot-squadron-leader-asim-jawad-dies-yak-130-crash-chattogram-3605891"
+              target="_blank"
+              >The Daily Star (2024). "BAF pilot Squadron Leader Asim Jawad
+              dies".</a
+            >
+          </li>
+          <li>
+            [11]
+            <a
+              href="https://www.prothomalo.com/bangladesh/capital/p8i7g6f4x9"
+              target="_blank"
+              >Prothom Alo (2025). "Biman bahinir proshikhon biman durghotonay
+              nihoto 19".</a
+            >
+          </li>
+          <li>
+            [12]
+            <a
+              href="https://www.ispr.gov.bd/bn/press-release-bn-430/"
+              target="_blank"
+              >ISPR Press Release (2025). "BAF F-7BGI Accident in Uttara".</a
+            >
+          </li>
+          <li>
+            [13]
+            <a
+              href="https://www.thedailystar.net/country/news/baf-k-8w-jet-crashes-jessore-2-pilots-missing-1600123"
+              target="_blank"
+              >The Daily Star (2018). "BAF K-8W jet crashes in Jessore, 2 pilots
+              dead".</a
+            >
+          </li>
+          <li>
+            [14]
+            <a
+              href="https://www.dhakatribune.com/bangladesh/2017/12/27/two-baf-training-aircraft-crash-coxs-bazar"
+              target="_blank"
+              >Dhaka Tribune (2017). "Two BAF training aircraft crash in Cox’s
+              Bazar".</a
+            >
+          </li>
+          <li>
+            [15]
+            <a
+              href="https://www.dhakatribune.com/bangladesh/342119/baf-trainer-aircraft-crashes-in-jashore"
+              target="_blank"
+              >Dhaka Tribune (2025). "BAF trainer aircraft crashes in
+              Jashore".</a
+            >
+          </li>
+          <li>
+            [16]
+            <a
+              href="https://bdnews24.com/bangladesh/2007/04/09/baf-flight-cadet-killed-in-jessore-crash"
+              target="_blank"
+              >BDNews24 (2007). "BAF flight cadet killed in Jessore crash".</a
+            >
+          </li>
+          <li>
+            [17]
+            <a
+              href="https://www.thedailystar.net/country/baf-yak-130-crashes-in-chittagong-1432435"
+              target="_blank"
+              >The Daily Star (2017). "BAF Yak-130 crashes in Chittagong".</a
+            >
+          </li>
+          <li>
+            [18]
+            <a
+              href="https://www.thedailystar.net/country/news/baf-pilot-killed-f-7-fighter-jet-crash-tangail-1664161"
+              target="_blank"
+              >The Daily Star (2018). "BAF pilot killed in F-7 fighter jet
+              crash".</a
+            >
+          </li>
+          <li>
+            [19]
+            <a
+              href="https://www.thedailystar.net/2006/04/25/d60425011611.htm"
+              target="_blank"
+              >The Daily Star (2006). "BAF trainee pilot killed in crash".</a
+            >
+          </li>
+          <li>
+            [20]
+            <a
+              href="https://www.nytimes.com/2025/07/21/world/asia/bangladesh-military-plane-crash.html"
+              target="_blank"
+              >The New York Times (2025). "Bangladesh Air Force Jet Crashes Into
+              School..."</a
+            >
+          </li>
+          <li>
+            [21]
+            <a
+              href="https://www.prothomalo.com/bangladesh/5xfn461ai2"
+              target="_blank"
+              >Prothom Alo (2025). "স্কুলে ভেঙে পড়ল বিমান, নিহত ২২"</a
+            >
+          </li>
+        </ul>
+      </section>
+
+      <footer class="text-center mt-12 py-6 border-t border-[#BFD7EA]">
+        <p class="text-gray-600">
+          এই ইনফোগ্রাফিকের সকল তথ্য বিভিন্ন নির্ভরযোগ্য সংবাদপত্র ও অনলাইন নিউজ
+          পোর্টাল থেকে সংগ্রহ করা হয়েছে। সকল তথ্যই পাবলিকলি অ্যাভেইলেবল।
+        </p>
+        <p class="text-sm text-gray-500 mt-2">
+          সর্বশেষ আপডেট ২২ জুলাই, সকাল ১১:২২
+        </p>
+      </footer>
+    </div>
+
+    <script>
+      window.onload = function () {
+        const incidents = [
+          {
+            year: 2025,
+            date: "২১ জুলাই",
+            location: "উত্তরা, ঢাকা",
+            model: "FT-7BGI",
+            casualties: { dead: 27, injured: 171 },
+            coords: [23.8779, 90.3684],
+          },
+          {
+            year: 2025,
+            date: "১৩ মার্চ",
+            location: "যশোর",
+            model: "Grob-120TP",
+            casualties: { dead: 0, injured: 0 },
+            coords: [23.1838, 89.1608],
+          },
+          {
+            year: 2024,
+            date: "৯ মে",
+            location: "চট্টগ্রাম",
+            model: "Yak-130",
+            casualties: { dead: 1, injured: 0 },
+            coords: [22.2536, 91.8123],
+          },
+          {
+            year: 2018,
+            date: "২৩ নভেম্বর",
+            location: "মধুপুর, টাঙ্গাইল",
+            model: "F-7BG",
+            casualties: { dead: 1, injured: 0 },
+            coords: [24.6115, 90.0535],
+          },
+          {
+            year: 2018,
+            date: "০১ জুলাই",
+            location: "যশোর",
+            model: "K-8W",
+            casualties: { dead: 2, injured: 0 },
+            coords: [23.1738, 89.2169],
+          },
+          {
+            year: 2017,
+            date: "২৭ ডিসেম্বর",
+            location: "মহেশখালী, কক্সবাজার",
+            model: "2x Yak-130",
+            casualties: { dead: 0, injured: 11 },
+            coords: [21.5542, 91.9528],
+          },
+          {
+            year: 2017,
+            date: "১১ জুলাই",
+            location: "চট্টগ্রাম",
+            model: "Yak-130",
+            casualties: { dead: 0, injured: 0 },
+            coords: [22.25, 91.83],
+          },
+          {
+            year: 2015,
+            date: "২৯ জুন",
+            location: "বঙ্গোপসাগর",
+            model: "F-7MB",
+            casualties: { dead: 1, injured: 0 },
+            coords: [22.1, 91.7],
+          },
+          {
+            year: 2013,
+            date: "২০ মে",
+            location: "যশোর",
+            model: "L-39 Albatros",
+            casualties: { dead: 0, injured: 0 },
+            coords: [23.1838, 89.1608],
+          },
+          {
+            year: 2012,
+            date: "৮ এপ্রিল",
+            location: "টাঙ্গাইল",
+            model: "L-39 Albatros",
+            casualties: { dead: 1, injured: 1 },
+            coords: [24.25, 89.92],
+          },
+          {
+            year: 2010,
+            date: "২০ ডিসেম্বর",
+            location: "বরিশাল",
+            model: "PT-6",
+            casualties: { dead: 2, injured: 0 },
+            coords: [22.701, 90.3603],
+          },
+          {
+            year: 2009,
+            date: "২২ অক্টোবর",
+            location: "বগুড়া",
+            model: "PT-6",
+            casualties: { dead: 0, injured: 2 },
+            coords: [24.8488, 89.3703],
+          },
+          {
+            year: 2009,
+            date: "১৬ জুন",
+            location: "কর্ণফুলী নদী, চট্টগ্রাম",
+            model: "FT-6",
+            casualties: { dead: 0, injured: 0 },
+            coords: [22.28, 91.82],
+          },
+          {
+            year: 2008,
+            date: "৮ এপ্রিল",
+            location: "টাঙ্গাইল",
+            model: "F-7MB",
+            casualties: { dead: 1, injured: 0 },
+            coords: [24.39, 90.12],
+          },
+          {
+            year: 2007,
+            date: "৯ এপ্রিল",
+            location: "যশোর",
+            model: "PT-6",
+            casualties: { dead: 1, injured: 0 },
+            coords: [23.0183, 89.4217],
+          },
+          {
+            year: 2006,
+            date: "২৪ এপ্রিল",
+            location: "ঝিনাইদহ",
+            model: "PT-6",
+            casualties: { dead: 1, injured: 0 },
+            coords: [23.4071, 89.02],
+          },
+          {
+            year: 2005,
+            date: "৭ জুন",
+            location: "উত্তরা, ঢাকা",
+            model: "F-7MB",
+            casualties: { dead: 1, injured: 4 },
+            coords: [23.87, 90.38],
+          },
+        ];
+
+        // Map Initialization
+        const map = L.map("map").setView([23.685, 90.3563], 7);
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          maxZoom: 19,
+          attribution: "© OpenStreetMap",
+        }).addTo(map);
+
+        const redIcon = new L.Icon({
+          iconUrl:
+            "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png",
+          shadowUrl:
+            "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+          shadowSize: [41, 41],
+        });
+        const yellowIcon = new L.Icon({
+          iconUrl:
+            "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-yellow.png",
+          shadowUrl:
+            "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+          shadowSize: [41, 41],
+        });
+        const blueIcon = new L.Icon({
+          iconUrl:
+            "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png",
+          shadowUrl:
+            "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+          shadowSize: [41, 41],
+        });
+
+        incidents.forEach((incident) => {
+          let icon;
+          if (incident.casualties.dead > 0) {
+            icon = redIcon;
+          } else if (incident.casualties.injured > 0) {
+            icon = yellowIcon;
+          } else {
+            icon = blueIcon;
+          }
+          const popupContent = `<b>${incident.date}, ${incident.year}</b><br>${incident.location}<br>মডেল: ${incident.model}<br>নিহত: ${incident.casualties.dead}, আহত: ${incident.casualties.injured}`;
+          L.marker(incident.coords, { icon: icon })
+            .addTo(map)
+            .bindPopup(popupContent);
+        });
+
+        // Timeline Generation
+        const timelineContainer = document.getElementById("timeline");
+        const timelineIncidents = [
+          {
+            year: 2025,
+            model: "FT-7BGI",
+            location: "উত্তরা, ঢাকা",
+            casualties: { dead: 27, injured: "171" },
+          },
+          {
+            year: 2025,
+            model: "Grob-120TP",
+            location: "যশোর",
+            casualties: { dead: 0, injured: 0 },
+          },
+          {
+            year: 2024,
+            model: "Yak-130",
+            location: "চট্টগ্রাম",
+            casualties: { dead: 1, injured: 0 },
+          },
+          {
+            year: 2018,
+            model: "F-7BG",
+            location: "টাঙ্গাইল",
+            casualties: { dead: 1, injured: 0 },
+          },
+          {
+            year: 2018,
+            model: "K-8W",
+            location: "যশোর",
+            casualties: { dead: 2, injured: 0 },
+          },
+          {
+            year: 2017,
+            model: "Yak-130 (2 aircraft)",
+            location: "কক্সবাজার",
+            casualties: { dead: 0, injured: 11 },
+          },
+          {
+            year: 2017,
+            model: "Yak-130",
+            location: "চট্টগ্রাম",
+            casualties: { dead: 0, injured: 0 },
+          },
+          {
+            year: 2015,
+            model: "F-7MB",
+            location: "বঙ্গোপসাগর",
+            casualties: { dead: 1, injured: 0 },
+          },
+          {
+            year: 2013,
+            model: "L-39 Albatros",
+            location: "যশোর",
+            casualties: { dead: 0, injured: 0 },
+          },
+          {
+            year: 2012,
+            model: "L-39 Albatros",
+            location: "টাঙ্গাইল",
+            casualties: { dead: 1, injured: 1 },
+          },
+          {
+            year: 2010,
+            model: "PT-6",
+            location: "বরিশাল",
+            casualties: { dead: 2, injured: 0 },
+          },
+          {
+            year: 2009,
+            model: "PT-6",
+            location: "বগুড়া",
+            casualties: { dead: 0, injured: 2 },
+          },
+          {
+            year: 2009,
+            model: "FT-6",
+            location: "কর্ণফুলী নদী",
+            casualties: { dead: 0, injured: 0 },
+          },
+          {
+            year: 2008,
+            model: "F-7MB",
+            location: "টাঙ্গাইল",
+            casualties: { dead: 1, injured: 0 },
+          },
+          {
+            year: 2007,
+            model: "PT-6",
+            location: "যশোর",
+            casualties: { dead: 1, injured: 0 },
+          },
+          {
+            year: 2006,
+            model: "PT-6",
+            location: "ঝিনাইদহ",
+            casualties: { dead: 1, injured: 0 },
+          },
+          {
+            year: 2005,
+            model: "F-7MB",
+            location: "উত্তরা, ঢাকা",
+            casualties: { dead: 1, injured: 4 },
+          },
+          {
+            year: 2003,
+            model: "FT-7B",
+            location: "অজ্ঞাত",
+            casualties: { dead: 0, injured: "N/A" },
+          },
+          {
+            year: 2001,
+            model: "FT-7B",
+            location: "অজ্ঞাত",
+            casualties: { dead: 1, injured: 0 },
+          },
+          {
+            year: 1993,
+            model: "FT-5",
+            location: "অজ্ঞাত",
+            casualties: { dead: 1, injured: 0 },
+          },
+          {
+            year: 1993,
+            model: "PT-6 (2 aircraft)",
+            location: "অজ্ঞাত",
+            casualties: { dead: 3, injured: 0 },
+          },
+        ];
+        timelineIncidents.forEach((incident) => {
+          const timelineItem = document.createElement("div");
+          timelineItem.classList.add("timeline-item");
+
+          const content = `
+                <div class="timeline-content">
+                    <h4 class="font-bold text-lg text-[#087E8B]">${incident.year}</h4>
+                    <p class="font-semibold">${incident.model}</p>
+                    <p class="text-sm">${incident.location}</p>
+                    <p class="text-sm text-red-600">নিহত: ${incident.casualties.dead}, আহত: ${incident.casualties.injured}</p>
+                </div>
+            `;
+          timelineItem.innerHTML = content;
+          timelineContainer.appendChild(timelineItem);
+        });
+
+        // Chart.js Code
+        const tooltipTitleCallback = (tooltipItems) => {
+          const item = tooltipItems[0];
+          let label = item.chart.data.labels[item.dataIndex];
+          if (Array.isArray(label)) {
+            return label.join(" ");
+          }
+          return label;
+        };
+
+        const sharedChartOptions = {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              labels: {
+                color: "#0B3954",
+                font: {
+                  family: "'Noto Serif Bengali', serif",
+                  size: 14,
+                },
+              },
+            },
+            tooltip: {
+              titleFont: { family: "'Noto Serif Bengali', serif" },
+              bodyFont: { family: "'Noto Serif Bengali', serif" },
+              callbacks: {
+                title: tooltipTitleCallback,
+              },
+            },
+          },
+          scales: {
+            y: {
+              ticks: {
+                color: "#0B3954",
+                font: { family: "'Noto Serif Bengali', serif" },
+              },
+              grid: {
+                color: "#E7F0F7",
+              },
+            },
+            x: {
+              ticks: {
+                color: "#0B3954",
+                font: { family: "'Noto Serif Bengali', serif" },
+              },
+              grid: {
+                display: false,
+              },
+            },
+          },
+        };
+
+        const yearlyTrendCtx = document
+          .getElementById("yearlyTrendChart")
+          .getContext("2d");
+        new Chart(yearlyTrendCtx, {
+          type: "line",
+          data: {
+            labels: [
+              "1993",
+              "2001",
+              "03",
+              "05",
+              "06",
+              "07",
+              "08",
+              "09",
+              "10",
+              "12",
+              "13",
+              "15",
+              "17",
+              "18",
+              "24",
+              "25",
+            ],
+            datasets: [
+              {
+                label: "দুর্ঘটনার সংখ্যা",
+                data: [2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 2, 2, 1, 2],
+                borderColor: "#087E8B",
+                backgroundColor: "rgba(8, 126, 139, 0.1)",
+                fill: true,
+                tension: 0.4,
+                borderWidth: 3,
+              },
+            ],
+          },
+          options: {
+            ...sharedChartOptions,
+            scales: {
+              y: {
+                ...sharedChartOptions.scales.y,
+                beginAtZero: true,
+                ticks: { stepSize: 1 },
+              },
+              x: { ...sharedChartOptions.scales.x },
+            },
+          },
+        });
+
+        const modelCrashCountCtx = document
+          .getElementById("modelCrashCountChart")
+          .getContext("2d");
+        new Chart(modelCrashCountCtx, {
+          type: "bar",
+          data: {
+            labels: [
+              "F-7/FT Family",
+              "PT-6",
+              "Yak-130",
+              "L-39 Albatros",
+              "K-8W",
+              "FT-5",
+              "Grob-120TP",
+            ],
+            datasets: [
+              {
+                label: "দুর্ঘটনার সংখ্যা",
+                data: [9, 5, 3, 2, 1, 1, 1],
+                backgroundColor: [
+                  "#0B3954",
+                  "#087E8B",
+                  "#5A8F7B",
+                  "#88BDBF",
+                  "#BFD7EA",
+                  "#C1E1DC",
+                  "#E7F0F7",
+                ],
+                borderWidth: 1,
+              },
+            ],
+          },
+          options: {
+            ...sharedChartOptions,
+            indexAxis: "y",
+            plugins: {
+              ...sharedChartOptions.plugins,
+              legend: { display: false },
+            },
+          },
+        });
+
+        const modelCasualtyCtx = document
+          .getElementById("modelCasualtyChart")
+          .getContext("2d");
+        new Chart(modelCasualtyCtx, {
+          type: "bar",
+          data: {
+            labels: [
+              "F-7/FT Family",
+              "PT-6",
+              "K-8W",
+              "Yak-130",
+              "L-39 Albatros",
+              "FT-5",
+            ],
+            datasets: [
+              {
+                label: "পাইলট নিহত",
+                data: [8, 4, 2, 1, 1, 1],
+                backgroundColor: "#FF5A5F",
+              },
+              {
+                label: "বেসামরিক নিহত/আহত",
+                data: [26 + 171 + 6, 0, 0, 0, 0, 0],
+                backgroundColor: "#F5B82E",
+              },
+            ],
+          },
+          options: {
+            ...sharedChartOptions,
+            indexAxis: "y",
+            scales: {
+              x: { ...sharedChartOptions.scales.x, stacked: true },
+              y: { ...sharedChartOptions.scales.y, stacked: true },
+            },
+          },
+        });
+      };
+    </script>
+  </body>
+</html>
